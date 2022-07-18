@@ -28,8 +28,6 @@ void RenderScene(void)
     glRotatef(xRot, 1.0f, 0.0f, 0.0f);
     glRotatef(yRot, 0.0f, 1.0f, 0.0f);
     
-    printf("(%f) \n",xRot);
-
 
     //Call only once for all remaining points
     glBegin(GL_POINTS);
@@ -43,7 +41,6 @@ void RenderScene(void)
         glVertex3f(x, y, z);
         z += 0.1f;
     }
-    printf("\n++++++++++++++++++++++++++++++++\n");
 
     //Done drawing points
     glEnd();
