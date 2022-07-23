@@ -6,10 +6,10 @@ LINKFLAGS += -framework GLUT
 WARNINGS_FLAGS = -Wextra
 
 CFLAGS    = -O2
-C        = gcc
+C         = gcc
 SRCS      = main.c
 OBJS      = $(SRCS:.c=.o)
-PROG      = pointsExample
+PROG      = linesExample
 
 all: $(SRCS) $(PROG)
 
