@@ -1,15 +1,13 @@
 #define GL_SILENCE_DEPRECATION
 
-#include<stdio.h>
+#include <stdio.h>
 #include <GL/freeglut.h>
 #include <GL/gl.h>
 #include <math.h>
 
-//Define a constant for the value of PI
-#define GL_PI 3.1415f
+// Define a constant for the value of PI
+#define TRUE 1
 
-static GLfloat xRot = 250.0f;
-static GLfloat yRot = 0.2f;
 static GLint windowId;
 
 // Keep track of windwos changing width and height
@@ -19,42 +17,52 @@ GLfloat windowHeight;
 GLbyte bCull = 0;
 GLbyte bDepth = 0;
 GLbyte bOutline = 0;
+GLbyte bEdgeFlag = 0;
 
-void menu(int num){
-  if(num == 0){
-    glutDestroyWindow(windowId);
-    exit(0);
-  }else{
-      switch (num)
-      {
-      case 2:
+void menu(int num)
+{
+    if (num == 0)
+    {
+        glutDestroyWindow(windowId);
+        exit(0);
+    }
+    else
+    {
+        switch (num)
+        {
+        case 2:
             bCull = 1;
-          break;
-      case 3:
+            break;
+        case 3:
             bCull = 0;
-          break;
-      case 4:
+            break;
+        case 4:
             bDepth = 1;
-          break;
-      case 5:
+            break;
+        case 5:
             bDepth = 0;
-          break;
-      case 6:
+            break;
+        case 6:
             bOutline = 1;
-          break;
-      case 7:
+            break;
+        case 7:
             bOutline = 0;
-          break;          
-          
-      
-      default:
-          break;
-      }
-  }
-  glutPostRedisplay();
-} 
+        case 8:
+            bEdgeFlag = 1;
+            break;
+        case 9:
+            bEdgeFlag = 0;
+            break;
 
-void createMenu(void){     
+        default:
+            break;
+        }
+    }
+    glutPostRedisplay();
+}
+
+void createMenu(void)
+{
     int turnCullingSubMenuId = glutCreateMenu(menu);
     glutAddMenuEntry("On", 2);
     glutAddMenuEntry("Off", 3);
@@ -64,23 +72,25 @@ void createMenu(void){
     int outlineMenuId = glutCreateMenu(menu);
     glutAddMenuEntry("On", 6);
     glutAddMenuEntry("Off", 7);
+    int edgeFlagMenuId = glutCreateMenu(menu);
+    glutAddMenuEntry("On", 8);
+    glutAddMenuEntry("Off", 9);
 
-    //Main menu    
+    // Main menu
     int menu_id = glutCreateMenu(menu);
     glutAddSubMenu("Turn culling", turnCullingSubMenuId);
     glutAddSubMenu("Enable depth testing", enableDepthTestMenuId);
     glutAddSubMenu("Outline", outlineMenuId);
-    glutAddMenuEntry("Quit", 0);     
+    glutAddSubMenu("Edge", edgeFlagMenuId);
+    glutAddMenuEntry("Quit", 0);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
-} 
-
+}
 
 // Set up the rendering state
 void SetupRC(void)
 {
     // Set clear color to black
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
 
     // Set current drawing color to green
     //          R     G      B
@@ -97,86 +107,72 @@ void SetupRC(void)
 // Called to draw scene
 void RenderScene(void)
 {
-    GLfloat x, y, angle; //Storage for coordinates and angles
+    GLfloat x, y, angle; // Storage for coordinates and angles
     int iPivot = 1;
 
     // Clear the window and the depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Turn culling on if flat is set
-    if(bCull) 
+    if (bCull)
         glEnable(GL_CULL_FACE);
-    else 
+    else
         glDisable(GL_CULL_FACE);
 
     // Enable depth testing if flat is set
-    if(bDepth)
+    if (bDepth)
         glEnable(GL_DEPTH_TEST);
     else
         glDisable(GL_DEPTH_TEST);
 
     // Draw the back side as a wireframe only, if flag is set
-    if(bOutline)
+    if (bOutline)
         glPolygonMode(GL_BACK, GL_LINE);
     else
         glPolygonMode(GL_BACK, GL_FILL);
 
     // Save matrix state and to the rotation
     glPushMatrix();
-    glRotatef(xRot, 1.0f, 0.0f, 0.0f);
-    glRotatef(yRot, 0.0f, 1.0f, 0.0f);
 
-    // Begin a triangle fan
-    glBegin(GL_TRIANGLE_FAN);
-        // Pinnacle of cone is shared vertex for fan, moved up-axis
-        //to produce a cone instead of a circle
-        glVertex3f(0.0f, 0.0, 75.0f);
+    // Begin the triangles
+    glBegin(GL_TRIANGLES);
 
-        // Loop around in a circle and specify even points along the circle
-        // as the vertices of the triangle fan
-        for(angle = 0.0f; angle <= (2.0f*GL_PI); angle += (GL_PI/8.0f))
-        {
-            // Calculate x and y position of the next vertex
-            x = 50.0f * sin(angle);
-            y = 50.0f * cos(angle);
+    glEdgeFlag(bEdgeFlag);
+    glVertex2f(-20.0f, 0.0f);
+    glEdgeFlag(TRUE);
+    glVertex2f(20.0f, 0.0f);
+    glVertex2f(0.0f, 40.0f);
 
-            // Alternate color between red and green
-            if((iPivot % 2) == 0)
-                glColor3f(0.0f, 1.0f, 0.0f);
-            else 
-                glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex2f(-20.0f, 0.0f);
+    glVertex2f(-60.0f, -20.0f);
+    glEdgeFlag(bEdgeFlag);
+    glVertex2f(-20.0f, -40.0f);
 
-            //Increment pivot to change color next time
-            iPivot++;
-            glVertex2f(x, y);
-        }
-    //Done drawing fan for cone
-    glEnd();
+    glEdgeFlag(TRUE);
+    glVertex2f(-20.0f, -40.0f);
+    glVertex2f(0.0f, -80.0f);
+    glEdgeFlag(bEdgeFlag);
+    glVertex2f(20.0f, -40.0f);
 
-    // Begin a new triangle fan to cover the bottom
-    glBegin(GL_TRIANGLE_FAN);
+    glEdgeFlag(TRUE);
+    glVertex2f(20.0f, -40.0f);
+    glVertex2f(60.0f, -20.0f);
+    glEdgeFlag(bEdgeFlag);
+    glVertex2f(20.0f, 0.0f);
 
-    // Center of fan is at the origin
-    glVertex2f(0.0f, 0.0f);
-    for(angle = 0.0f; angle < (2.0f * GL_PI); angle += (GL_PI/8.0f))
-    {
-        // Calculate x and y position of the next vertex
-        x = 50.0f*sin(angle);
-        y = 50.0f*cos(angle);
+    glEdgeFlag(TRUE);
+    
+    // Center square as two triangles
+    glEdgeFlag(bEdgeFlag);
+    glVertex2f(-20.0f, 0.0f);
+    glVertex2f(-20.0f, -40.0f);
+    glVertex2f(20.0f, 0.0f);
 
-        // Alternate color between red and green
-        if((iPivot % 2) == 0)
-            glColor3f(0.0f, 1.0f, 0.0f);
-        else
-            glColor3f(1.0f, 0.0f, 0.0f);
-        
-        // Increment pivot to change color next time
-        iPivot++;
-        // Specify the next vertex for the triangle fan
-        glVertex2f(x, y);
-    }
-
-    // Done drawing the fan that covers the bottom
+    glVertex2f(-20.0f, -40.0f);
+    glVertex2f(20.0f, -40.0f);
+    glVertex2f(20.0f, 0.0f);
+    glEdgeFlag(TRUE);
+    // Done drawing triangles
     glEnd();
 
     // Restore transformations
@@ -197,7 +193,6 @@ void ChangeSize(GLsizei width, GLsizei height)
     // Set Viewport to window dimensions
     glViewport(0, 0, width, height);
 
-    
     // Reset coordinate system
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -219,7 +214,7 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
     glutInitWindowSize(800, 800);
-    windowId = glutCreateWindow("Triangle culling example");
+    windowId = glutCreateWindow("Solid and outlined star");
     createMenu();
     glutDisplayFunc(RenderScene);
     glutReshapeFunc(ChangeSize);
