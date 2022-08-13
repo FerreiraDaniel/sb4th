@@ -14,7 +14,7 @@ GLfloat rsize = 25;
 GLfloat xstep = 1.0f;
 GLfloat ystep = 1.0f;
 
-// Keep track of windwos changing width and height
+// Keep track of window changing width and height
 GLfloat windowWidth;
 GLfloat windowHeight;
 
@@ -39,8 +39,6 @@ void RenderScene(void)
 void TimerFunction(int value)
 {
     // Reverse direction when you reach left or right edge
-    char test = x1 > windowWidth - rsize || x1 < -windowWidth;
-    printf("test: %d x1: %f \n", test, x1);
     if (x1 > windowWidth - rsize || x1 < -windowWidth)
         xstep = -xstep;
 
